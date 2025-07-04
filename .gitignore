@@ -1,13 +1,6 @@
-# Virtual environment directories
 venv/
-.venv/
-
-# Byte-compiled / optimized / DLL files
+*.pyc
 __pycache__/
-*.py[cod]
-*$py.class
-
-# Other common Python ignores
-*.egg-info/
-*.log
-*.sqlite3
+.env
+*.swp
+*.swo
