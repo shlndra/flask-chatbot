@@ -1,6 +1,7 @@
 # Conversational Chatbot with Flask and Hugging Face
 
-![Chatbot Demo](demo.gif) 
+![Chatbot Demo](Demo1.png) 
+![Chatbot Demo](Demo2.png)
 
 A step-by-step conversational chatbot web application using Flask as the backend and Hugging Face's transformer models for generating human-like responses.
 
