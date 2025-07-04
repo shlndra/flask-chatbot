@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <style>
+        /* Full-screen styling */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a14;
+            color: #e0e0ff;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            background: rgba(10, 10, 20, 0.9);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+        }
+
+        h1 {
+            background: linear-gradient(90deg, rgba(0, 240, 255, 0.2), rgba(255, 0, 240, 0.2));
+            color: white;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .user-message, .bot-message, .error-message {
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 12px;
+            position: relative;
+            animation: messageAppear 0.3s ease-out forwards;
+        }
+
+        .user-message {
+            background: rgba(0, 240, 255, 0.15);
+            color: #00f0ff;
+            margin-left: auto;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 4px;
+            border-right: 2px solid #00f0ff;
+        }
+
+        .bot-message {
+            background: rgba(255, 0, 240, 0.15);
+            margin-right: auto;
+            border-bottom-right-radius: 20px;
+            border-bottom-left-radius: 4px;
+            border-left: 2px solid #ff00f0;
+        }
+
+        .error-message {
+            background: rgba(255, 56, 96, 0.2);
+            color: #ff3860;
+            margin-right: auto;
+            border-left: 2px solid #ff3860;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 15px;
+            background: rgba(15, 15, 30, 0.9);
+            border-top: 1px solid rgba(0, 240, 255, 0.2);
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(10, 10, 20, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 24px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .input-area input:focus {
+            border-color: #00f0ff;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+        }
+
+        .input-area button {
+            margin-left: 10px;
+            padding: 12px 20px;
+            background: #00f0ff;
+            color: black;
+            border: none;
+            border-radius: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .input-area button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 240, 255, 0.4);
+        }
+
+        #resetButton {
+            background: #ff3860;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(255, 0, 240, 0.1);
+            border-radius: 20px;
+            width: fit-content;
+            margin-right: auto;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff00f0;
+            border-radius: 50%;
+            margin: 0 3px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+            30% { transform: translateY(-5px); opacity: 1; }
+        }
+
+        @keyframes messageAppear {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom scrollbar */
+        .chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-box::-webkit-scrollbar-track {
+            background: rgba(0, 240, 255, 0.1);
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background: #00f0ff;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>AI CHAT INTERFACE</h1>
+        <div class="chat-box" id="chatBox">
+            {% for message in chat_history %}
+                {% if loop.index0 % 2 == 0 %}
+                    <div class="user-message">
+                        <strong>You:</strong> {{ tokenizer.decode(message, skip_special_tokens=True) }}
+                    </div>
+                {% else %}
+                    <div class="bot-message">
+                        <strong>AI:</strong> {{ tokenizer.decode(message, skip_special_tokens=True) }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+            <button id="sendButton">Send</button>
+            <button id="resetButton">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatBox = document.getElementById('chatBox');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+        document.getElementById('resetButton').addEventListener('click', resetChat);
+
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const message = userInput.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML += `
+                <div class="user-message">
+                    <strong>You:</strong> ${message}
+                </div>`;
+            userInput.value = '';
+            
+            // Show typing indicator
+            chatBox.innerHTML += `
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <span style="margin-left:8px">AI is typing...</span>
+                </div>`;
+            
+            // Scroll to bottom
+            chatBox.scrollTop = chatBox.scrollHeight;
+            
+            try {
+                // Send to server
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `user_input=${encodeURIComponent(message)}`
+                });
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                const typingIndicators = document.querySelectorAll('.typing-indicator');
+                typingIndicators[typingIndicators.length-1].remove();
+                
+                if (data.error) {
+                    chatBox.innerHTML += `
+                        <div class="error-message">
+                            <strong>Error:</strong> ${data.error}
+                        </div>`;
+                } else {
+                    chatBox.innerHTML += `
+                        <div class="bot-message">
+                            <strong>AI:</strong> ${data.response}
+                        </div>`;
+                }
+            } catch (error) {
+                chatBox.innerHTML += `
+                    <div class="error-message">
+                        <strong>Connection Error:</strong> Failed to get response
+                    </div>`;
+            }
+            
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function resetChat() {
+            if (confirm('Are you sure you want to reset the conversation?')) {
+                fetch('/reset', {
+                    method: 'POST'
+                })
+                .then(() => {
+                    document.getElementById('chatBox').innerHTML = '';
+                });
+            }
+        }
+    </script>
+</body>
+</html>
